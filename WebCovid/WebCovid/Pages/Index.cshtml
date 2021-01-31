@@ -82,13 +82,13 @@
             <canvas id="Chart1" width="200" height="200"></canvas>
         </div>
         <div class=" col-1">
-
+            <canvas id="hChart1" width="200" height="200"></canvas>
         </div>
         <div class=" col-3">
             <canvas id="Chart2" width="200" height="200"></canvas>
         </div>
         <div class=" col-1">
-
+            <canvas id="hChart2" width="200" height="200"></canvas>
         </div>
         <div class=" col-3">
             <canvas id="Chart3" width="200" height="200"></canvas>
@@ -262,21 +262,173 @@
                 });
             });
 
-            //this was my approach to formatting the state data
-            //var state_date = [];
-            //var state_deaths = [];
-            //var state_pos_inc = [];
-            //stateData.orderByChild("state").equalTo(state).once('value', function (snapshot) {
-            //    var sD = snapshot.val();
-            //    for (let i in sD) {
-            //        var d1 = Date.parse(sD[i].date);
-            //        if(d1 >= cutoffDate){
-            //            state_date.push(data[i].date);
-            //            state_deaths.push(data[i].death)
-            //            state_pos_inc.push(data[i].positiveIncrease)
-            //        }
-            //    }
-            //});
+
+            var h_name_n_addy = new Map(); //going to have to add a few together
+
+            var h_name_to_tot_bed = new Map();
+            var date_to_inpBeds = new Map();
+            var h_name_to_totPeds = new Map();
+
+            hospData.orderByChild("state").equalTo(state).once('value', function (snapshot) {
+                var hD = snapshot.val();
+
+                for (let i in hD) {
+                    h_name_n_addy.set(hD[i].hospital_name, hD[i].address + ", " + hD[i].city + ", " + hD[i].state + " " + hD[i].zip);
+
+                    var d1 = Date.parse(hD[i].collection_week);
+                    if(d1 != cutoffDate){
+                        if(parseInt(hD[i].total_beds_7_day_avg) >= 0){
+                            if(h_name_to_tot_bed.get(hD[i].hospital_name) == undefined) {
+                                h_name_to_tot_bed.set(hD[i].hospital_name, parseInt(hD[i].total_beds_7_day_avg));
+                            }
+                            else {
+                                var num = h_name_to_tot_bed.get(hD[i].hospital_name) + parseInt(hD[i].total_beds_7_day_avg);
+                                h_name_to_tot_bed.set(hD[i].hospital_name, num);
+                            }
+                        }
+                        if(parseInt(hD[i].inpatient_beds_7_day_avg) >= 0) {
+
+                            if(date_to_inpBeds.get(hD[i].collection_week) == undefined) {
+                                date_to_inpBeds.set(hD[i].collection_week, parseInt(hD[i].inpatient_beds_7_day_avg));
+                            }
+                            else {
+                                var num = date_to_inpBeds.get(hD[i].collection_week) + parseInt(hD[i].inpatient_beds_7_day_avg);
+                                date_to_inpBeds.set(hD[i].collection_week, num);
+                            }
+                        }
+                        if(parseInt(hD[i].total_pediatric_patients_hospitalized_confirmed_and_suspected_covid_7_day_avg) >= 0) {
+                            if(h_name_to_totPeds.get(hD[i].hospital_name) == undefined) {
+                                h_name_to_totPeds.set(hD[i].hospital_name, parseInt(hD[i].total_pediatric_patients_hospitalized_confirmed_and_suspected_covid_7_day_avg));
+                            }
+                            else {
+                                var num = h_name_to_totPeds.get(hD[i].hospital_name) + parseInt(hD[i].total_pediatric_patients_hospitalized_confirmed_and_suspected_covid_7_day_avg);
+                                h_name_to_totPeds.set(hD[i].hospital_name, num);
+                            }
+                        }
+                    }
+                }
+                
+                function retKeys(map) 
+                {
+                    var mp = [];
+                    for(const i of map.keys()) 
+                    {
+                        mp.push(i);
+                        console.log(i);
+                    }
+                    console.log('--');
+                    return mp;
+                }
+                function retIt(map) 
+                {
+                    var mp = [];
+                    for(const i of map.keys()) 
+                    {
+                        mp.push(map.get(i));
+                    }
+                    return mp;
+                }
+
+                //hospital name vs hospital beds
+                var barChartData = 
+                {
+                    type: 'horizontalBar', 
+                    data: {
+                        labels: (retKeys(h_name_to_tot_bed)).slice(0,8), 
+                        datasets: [{
+                            label: "Total Number of Beds",
+                            backgroundColor: '#ff6384', 
+                            borderColor: '#ff6384', 
+                            borderWidth: 1, 
+                            data: (retIt(h_name_to_tot_bed)).slice(0,8)
+                        }]
+                    }, 
+                    options: {
+                        responsive: true, 
+                        legend: {
+                            position: 'top'
+                        }, 
+                        title: {
+                            display: true, 
+                            text: 'The Total Number of Beds in Each Hospital'
+                        },
+                        hover: {
+                            mode: 'nearest',
+                            intersect: false
+                        }, 
+                        scales: {
+                            xAxes: [{
+                                display: true, 
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Hospital'
+                                }
+                            }],
+                            yAxes: [{
+                                display: true, 
+                                scaleLabel: {
+                                    display: true, 
+                                    labelString: '# of Beds'
+                                }
+                            }]
+                        }
+
+                    }
+                    
+                };
+                var c = document.getElementById('hChart1').getContext('2d');
+                var barchar = new Chart(c, barChartData);
+
+                //hospital name vs hospital beds
+                var barChartData2 = 
+                {
+                    type: 'bar', 
+                    data: {
+                        labels: retKeys(date_to_inpBeds), 
+                        datasets: [{
+                            label: "Average Number of Inpatient Beds",
+                            backgroundColor: '#ff6384', 
+                            borderColor: '#ff6384', 
+                            borderWidth: 1, 
+                            data: retIt(date_to_inpBeds)
+                        }]
+                    }, 
+                    options: {
+                        responsive: true, 
+                        legend: {
+                            position: 'top'
+                        }, 
+                        title: {
+                            display: true, 
+                            text: 'The Average Number of Inpatient Beds Each Day'
+                        },
+                        hover: {
+                            mode: 'nearest',
+                            intersect: false
+                        }, 
+                        scales: {
+                            xAxes: [{
+                                display: true, 
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Day'
+                                }
+                            }],
+                            yAxes: [{
+                                display: true, 
+                                scaleLabel: {
+                                    display: true, 
+                                    labelString: '# of Beds'
+                                }
+                            }]
+                        }
+
+                    }
+                    
+                };
+                var d = document.getElementById('hChart2').getContext('2d');
+                var barchar = new Chart(d, barChartData2);
+            });
 
 
 
