@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\stuar\\source\\repos\\WebCovid\\WebCovid\\WebCovid.csproj",
+      "projectUniqueName": "C:\\Users\\stuar\\OneDrive\\Desktop\\Hackathon\\covid-19\\WebCovid\\WebCovid\\WebCovid.csproj",
       "projectName": "WebCovid",
-      "projectPath": "C:\\Users\\stuar\\source\\repos\\WebCovid\\WebCovid\\WebCovid.csproj",
+      "projectPath": "C:\\Users\\stuar\\OneDrive\\Desktop\\Hackathon\\covid-19\\WebCovid\\WebCovid\\WebCovid.csproj",
       "packagesPath": "C:\\Users\\stuar\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\stuar\\source\\repos\\WebCovid\\WebCovid\\obj\\",
+      "outputPath": "C:\\Users\\stuar\\OneDrive\\Desktop\\Hackathon\\covid-19\\WebCovid\\WebCovid\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\stuar\\AppData\\Roaming\\NuGet\\NuGet.Config",

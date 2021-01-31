@@ -14,7 +14,7 @@
 <div class="text-center">
     <h1 class="display-4">Covid Data</h1>
     <p>Pick a state below</p>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
     <script src="https://code.jquery.com/jquery.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <div class="dropdown-space dropdown">
@@ -96,46 +96,11 @@
             Covid facts
         </div>
     </div>
-    <canvas id="myChart" width="400" height="400"></canvas>
-    <script>
-        var ctx = document.getElementById('myChart').getContext('2d');
-        var myChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-                datasets: [{
-                    label: '# of Votes',
-                    data: [12, 19, 3, 5, 2, 3],
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(153, 102, 255, 0.2)',
-                        'rgba(255, 159, 64, 0.2)'
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        }
-                    }]
-                }
-            }
-        });
-    </script>
+    <div class="col-8">
+        HI
+        <canvas id="myChart" width="400" height="400"></canvas>
+    </div>
+
     <!-- The core Firebase JS SDK is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/8.2.5/firebase.js"></script>
     <!-- TODO: Add SDKs for Firebase products that you want to use
@@ -160,6 +125,25 @@
     </script>
 </div>
 <script>
+    var stateAbr = ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL",
+        "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+        "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM",
+        "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN",
+        "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"];
+
+    var stateName = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida",
+        "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland",
+        "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico",
+        "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee",
+        "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
+
+    var states = {};
+    
+    for (var i = 0; i < 50; i++) {
+        states[stateName[i]] = stateAbr[i];
+    }
+    
+    
     $('.dropdown-menu a').click(function () {
         $('#selected').text($(this).text());
         if ($(this).text() == "Choose State" && document.getElementById('coviddata').getAttribute("hidden") == null) {
@@ -168,24 +152,98 @@
         }
         else if ($(this).text() != "Choose State") {
             //Display Code below
-            var state = "FL"; //this should be interchangeable due to drop down
+            var state = states[$(this).text()]; //this should be interchangeable due to drop down
+            console.log(state);
             var city = "Jacksonville";
             var zip = "32223";
             var database = firebase.database();
             var hospData = database.ref("hospital_data");
             var stateData = database.ref("state_data");
-            //open snapshot
+            
+            //cut off dates
+            //date in hosp indicates the nearest friday -- so date cutoff
+            // would be the most recent friday 
+            var currentTime = new Date()
+            currentTime.setDate(currentTime.getDate() - (currentTime.getDay() +1) - 7);
+            console.log("the cutoff date: " + currentTime);
+            var cutoffDate = Date.parse(currentTime);
+            
+            //open snapshot         
+            dates = [];
+            deaths = [];
+            hospitalized = [];
+            datesmin = [];
+            deathsmin = [];
+            hospitalizedmin = [];
+            inc = 0;
             stateData.orderByChild("state").equalTo(state).once('value', function (snapshot) {
                 var data = snapshot.val();
                 for (let i in data) {
-                    var dat = data[i].state;
-                    console.log(data[i].date);
-                    $("#table_body").append("<tr><td>" + dat + "</td></tr>"); //I added it to a table, but dat currently contains the state val and 
-                    // data currently contains the whole chunk from date to deaths etc
+                    var d1 = Date.parse(data[i].date);
+                    if(d1 >= cutoffDate){
+                        var dat = data[i].state;
+                        if (inc < 8) {
+                            datesmin.push(data[i].date);
+                            deathsmin.push(data[i].death);
+                            hospitalizedmin.push(data[i].hospitalizedCurrently)
+                        }
+                        dates.push(data[i].date);
+                        deaths.push(data[i].death);
+                        hospitalized.push(data[i].hospitalizedCurrently)
+                    }
+                    inc++;
                 }
             });
-
-
+            
+            //this was my approach to formatting the state data
+            //var state_date = [];
+            //var state_deaths = [];
+            //var state_pos_inc = [];
+            //stateData.orderByChild("state").equalTo(state).once('value', function (snapshot) {
+            //    var sD = snapshot.val();
+            //    for (let i in sD) {
+            //        var d1 = Date.parse(sD[i].date);
+            //        if(d1 >= cutoffDate){
+            //            state_date.push(data[i].date);
+            //            state_deaths.push(data[i].death)
+            //            state_pos_inc.push(data[i].positiveIncrease)
+            //        }
+            //    }
+            //});
+            
+            
+            console.log(deathsmin);
+            var max = deathsmin.pop() + 1000;
+            var min = hospitalizedmin.pop() - 1000;
+            console.log(deathsmin[0]);
+            new Chart(document.getElementById("myChart"), {
+                type: 'line',
+                data: {
+                    labels: datesmin,
+                    datasets: [{
+                        data: deathsmin,
+                        label: "X",
+                        borderColor: "#8e5ea2",
+                        fill: false
+                    },
+                    {
+                        data: hospitalizedmin,
+                        label: "Y",
+                        borderColor: "#3cba9f",
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                suggestedMin: 0,
+                                suggestedMax: 15000
+                            }
+                        }]
+                    }
+                }
+            });
         }
 
     });
