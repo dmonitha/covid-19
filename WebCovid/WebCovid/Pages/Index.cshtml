@@ -17,7 +17,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
     <script src="https://code.jquery.com/jquery.js"></script>
     <script src="js/bootstrap.min.js"></script>
-    <div class="dropdown-space dropdown">
+    <div class=" dropdown" style="margin-bottom: 6cm;" id="stateSelect">
         <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span id="selected">Choose State</span><span class="caret"></span>
         </button>
@@ -75,56 +75,71 @@
             <a class="dropdown-item" href="#">Wyoming</a>
         </div>
     </div>
-    <div class="hide" id="coviddata" hidden>
-        <span id="stateName">State Data</span><span class="caret"></span>
-        <table id="table_body"></table>
-    </div>
-    <div class="row">
-        <div class="col-2 box">
-            Covid facts
+    <button class="btn" type="button" id="dataButton"></button>
+    <div class="hide row" id="coviddata" hidden>
+        <div class=" col-3">
+            <span id="stateName">State Data</span><span class="caret"></span>
+            <canvas id="Chart1" width="200" height="200"></canvas>
         </div>
-        <div class="col-3">
-
+        <div class=" col-1">
+            <canvas id="hChart1" width="200" height="200"></canvas>
         </div>
-        <div class="col-2 box">
-            Covid facts
+        <div class=" col-3">
+            <canvas id="Chart2" width="200" height="200"></canvas>
         </div>
-        <div class="col-3">
-
+        <div class=" col-1">
+            <canvas id="hChart2" width="200" height="200"></canvas>
         </div>
-        <div class="col-2 box">
-            Covid facts
+        <div class=" col-3">
+            <canvas id="Chart3" width="200" height="200"></canvas>
         </div>
     </div>
-    <div class="col-8">
-        HI
-        <canvas id="myChart" width="400" height="400"></canvas>
-    </div>
+        <div class="row">
+            <div class="col-2 box">
+                Covid facts
+            </div>
+            <div class="col-3">
 
-    <!-- The core Firebase JS SDK is always required and must be listed first -->
-    <script src="https://www.gstatic.com/firebasejs/8.2.5/firebase.js"></script>
-    <!-- TODO: Add SDKs for Firebase products that you want to use
-         https://firebase.google.com/docs/web/setup#available-libraries -->
-    <!-- <script src="https://www.gstatic.com/firebasejs/8.2.5/firebase-analytics.js"></script> -->
-    <script>
-        // Your web app's Firebase configuration
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-        var firebaseConfig = {
-            apiKey: "AIzaSyALk44aihOM5EqeiQwfD_vhIF7YhXIVwMY",
-            authDomain: "swamphackscovid19data.firebaseapp.com",
-            databaseURL: "https://swamphackscovid19data-default-rtdb.firebaseio.com",
-            projectId: "swamphackscovid19data",
-            storageBucket: "swamphackscovid19data.appspot.com",
-            messagingSenderId: "573451783241",
-            appId: "1:573451783241:web:96c03f6350266800a98398",
-            measurementId: "G-G0JKHK3W3V"
-        };
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        firebase.analytics();
-    </script>
+            </div>
+            <div class="col-2 box">
+                Covid facts
+            </div>
+            <div class="col-3">
+
+            </div>
+            <div class="col-2 box">
+                Covid facts
+            </div>
+        </div>
+        <div class="col-8">
+
+        </div>
+
+        <!-- The core Firebase JS SDK is always required and must be listed first -->
+        <script src="https://www.gstatic.com/firebasejs/8.2.5/firebase.js"></script>
+        <!-- TODO: Add SDKs for Firebase products that you want to use
+             https://firebase.google.com/docs/web/setup#available-libraries -->
+        <!-- <script src="https://www.gstatic.com/firebasejs/8.2.5/firebase-analytics.js"></script> -->
+        <script>
+            // Your web app's Firebase configuration
+            // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+            var firebaseConfig = {
+                apiKey: "AIzaSyALk44aihOM5EqeiQwfD_vhIF7YhXIVwMY",
+                authDomain: "swamphackscovid19data.firebaseapp.com",
+                databaseURL: "https://swamphackscovid19data-default-rtdb.firebaseio.com",
+                projectId: "swamphackscovid19data",
+                storageBucket: "swamphackscovid19data.appspot.com",
+                messagingSenderId: "573451783241",
+                appId: "1:573451783241:web:96c03f6350266800a98398",
+                measurementId: "G-G0JKHK3W3V"
+            };
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            firebase.analytics();
+        </script>
 </div>
 <script>
+    var test = true;
     var stateAbr = ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL",
         "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
         "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM",
@@ -143,14 +158,16 @@
         states[stateName[i]] = stateAbr[i];
     }
     
-    
     $('.dropdown-menu a').click(function () {
         $('#selected').text($(this).text());
         if ($(this).text() == "Choose State" && document.getElementById('coviddata').getAttribute("hidden") == null) {
             document.getElementById('coviddata').setAttribute("hidden", true);
+            document.getElementById('stateSelect').setAttribute("style", "margin - bottom: 6cm;");
 
         }
         else if ($(this).text() != "Choose State") {
+            $('#stateName').text($(this).text() + " State Data");
+            document.getElementById('stateSelect').removeAttribute("style");
             //Display Code below
             var state = states[$(this).text()]; //this should be interchangeable due to drop down
             console.log(state);
@@ -159,95 +176,266 @@
             var database = firebase.database();
             var hospData = database.ref("hospital_data");
             var stateData = database.ref("state_data");
-            
+
             //cut off dates
             //date in hosp indicates the nearest friday -- so date cutoff
             // would be the most recent friday 
             var currentTime = new Date()
-            currentTime.setDate(currentTime.getDate() - (currentTime.getDay() +1) - 7);
+            currentTime.setDate(currentTime.getDate() - (currentTime.getDay() + 1) - 7);
             console.log("the cutoff date: " + currentTime);
             var cutoffDate = Date.parse(currentTime);
-            
+
             //open snapshot         
-            dates = [];
-            deaths = [];
-            hospitalized = [];
-            datesmin = [];
-            deathsmin = [];
-            hospitalizedmin = [];
-            inc = 0;
+            var dates = [];
+            var deaths = [];
+            var deathInc = [];
+            var hospitalized = [];
+            var hosInc = [];
+            var posInc = [];
+            
             stateData.orderByChild("state").equalTo(state).once('value', function (snapshot) {
+                
                 var data = snapshot.val();
                 for (let i in data) {
                     var d1 = Date.parse(data[i].date);
-                    if(d1 >= cutoffDate){
+                    if (d1 >= cutoffDate) {
                         var dat = data[i].state;
-                        if (inc < 8) {
-                            datesmin.push(data[i].date);
-                            deathsmin.push(data[i].death);
-                            hospitalizedmin.push(data[i].hospitalizedCurrently)
-                        }
                         dates.push(data[i].date);
                         deaths.push(data[i].death);
-                        hospitalized.push(data[i].hospitalizedCurrently)
+                        hospitalized.push(data[i].hospitalizedCurrently);
+                        hosInc.push(data[i].hospitalizedIncrease);
+                        posInc.push(data[i].positiveIncrease);
+                        deathInc.push(data[i].deathIncrease);
                     }
-                    inc++;
                 }
-            });
-            
-            //this was my approach to formatting the state data
-            //var state_date = [];
-            //var state_deaths = [];
-            //var state_pos_inc = [];
-            //stateData.orderByChild("state").equalTo(state).once('value', function (snapshot) {
-            //    var sD = snapshot.val();
-            //    for (let i in sD) {
-            //        var d1 = Date.parse(sD[i].date);
-            //        if(d1 >= cutoffDate){
-            //            state_date.push(data[i].date);
-            //            state_deaths.push(data[i].death)
-            //            state_pos_inc.push(data[i].positiveIncrease)
-            //        }
-            //    }
-            //});
-            
-            
-            console.log(deathsmin);
-            var max = deathsmin.pop() + 1000;
-            var min = hospitalizedmin.pop() - 1000;
-            console.log(deathsmin[0]);
-            new Chart(document.getElementById("myChart"), {
-                type: 'line',
-                data: {
-                    labels: datesmin,
-                    datasets: [{
-                        data: deathsmin,
-                        label: "X",
-                        borderColor: "#8e5ea2",
-                        fill: false
-                    },
-                    {
-                        data: hospitalizedmin,
-                        label: "Y",
-                        borderColor: "#3cba9f",
-                        fill: false
-                    }]
-                },
-                options: {
-                    scales: {
-                        yAxes: [{
-                            ticks: {
-                                suggestedMin: 0,
-                                suggestedMax: 15000
-                            }
+                document.getElementById('coviddata').removeAttribute("hidden");
+                new Chart(document.getElementById("Chart1"), {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            data: deaths,
+                            label: "Deaths",
+                            borderColor: "#8e5ea2",
+                            fill: false
+                        },
+                        {
+                            data: hospitalized,
+                            label: "Hospitalized",
+                            borderColor: "#3cba9f",
+                            fill: false
                         }]
                     }
-                }
+                });
+                new Chart(document.getElementById("Chart2"), {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            data: deaths,
+                            label: "Deaths",
+                            borderColor: "#8e5ea2",
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: false
+                                }
+                            }]
+                        }
+                    }
+                });
+                new Chart(document.getElementById("Chart3"), {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            data: posInc,
+                            label: "Positive Increase",
+                            borderColor: "#8e5ea2",
+                            fill: false
+                        }]
+                    }
+                });
             });
-        }
 
+
+            var h_name_n_addy = new Map(); //going to have to add a few together
+
+            var h_name_to_tot_bed = new Map();
+            var date_to_inpBeds = new Map();
+            var h_name_to_totPeds = new Map();
+
+            hospData.orderByChild("state").equalTo(state).once('value', function (snapshot) {
+                var hD = snapshot.val();
+
+                for (let i in hD) {
+                    h_name_n_addy.set(hD[i].hospital_name, hD[i].address + ", " + hD[i].city + ", " + hD[i].state + " " + hD[i].zip);
+
+                    var d1 = Date.parse(hD[i].collection_week);
+                    if(d1 != cutoffDate){
+                        if(parseInt(hD[i].total_beds_7_day_avg) >= 0){
+                            if(h_name_to_tot_bed.get(hD[i].hospital_name) == undefined) {
+                                h_name_to_tot_bed.set(hD[i].hospital_name, parseInt(hD[i].total_beds_7_day_avg));
+                            }
+                            else {
+                                var num = h_name_to_tot_bed.get(hD[i].hospital_name) + parseInt(hD[i].total_beds_7_day_avg);
+                                h_name_to_tot_bed.set(hD[i].hospital_name, num);
+                            }
+                        }
+                        if(parseInt(hD[i].inpatient_beds_7_day_avg) >= 0) {
+
+                            if(date_to_inpBeds.get(hD[i].collection_week) == undefined) {
+                                date_to_inpBeds.set(hD[i].collection_week, parseInt(hD[i].inpatient_beds_7_day_avg));
+                            }
+                            else {
+                                var num = date_to_inpBeds.get(hD[i].collection_week) + parseInt(hD[i].inpatient_beds_7_day_avg);
+                                date_to_inpBeds.set(hD[i].collection_week, num);
+                            }
+                        }
+                        if(parseInt(hD[i].total_pediatric_patients_hospitalized_confirmed_and_suspected_covid_7_day_avg) >= 0) {
+                            if(h_name_to_totPeds.get(hD[i].hospital_name) == undefined) {
+                                h_name_to_totPeds.set(hD[i].hospital_name, parseInt(hD[i].total_pediatric_patients_hospitalized_confirmed_and_suspected_covid_7_day_avg));
+                            }
+                            else {
+                                var num = h_name_to_totPeds.get(hD[i].hospital_name) + parseInt(hD[i].total_pediatric_patients_hospitalized_confirmed_and_suspected_covid_7_day_avg);
+                                h_name_to_totPeds.set(hD[i].hospital_name, num);
+                            }
+                        }
+                    }
+                }
+                
+                function retKeys(map) 
+                {
+                    var mp = [];
+                    for(const i of map.keys()) 
+                    {
+                        mp.push(i);
+                        console.log(i);
+                    }
+                    console.log('--');
+                    return mp;
+                }
+                function retIt(map) 
+                {
+                    var mp = [];
+                    for(const i of map.keys()) 
+                    {
+                        mp.push(map.get(i));
+                    }
+                    return mp;
+                }
+
+                //hospital name vs hospital beds
+                var barChartData = 
+                {
+                    type: 'horizontalBar', 
+                    data: {
+                        labels: (retKeys(h_name_to_tot_bed)).slice(0,8), 
+                        datasets: [{
+                            label: "Total Number of Beds",
+                            backgroundColor: '#ff6384', 
+                            borderColor: '#ff6384', 
+                            borderWidth: 1, 
+                            data: (retIt(h_name_to_tot_bed)).slice(0,8)
+                        }]
+                    }, 
+                    options: {
+                        responsive: true, 
+                        legend: {
+                            position: 'top'
+                        }, 
+                        title: {
+                            display: true, 
+                            text: 'The Total Number of Beds in Each Hospital'
+                        },
+                        hover: {
+                            mode: 'nearest',
+                            intersect: false
+                        }, 
+                        scales: {
+                            xAxes: [{
+                                display: true, 
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Hospital'
+                                }
+                            }],
+                            yAxes: [{
+                                display: true, 
+                                scaleLabel: {
+                                    display: true, 
+                                    labelString: '# of Beds'
+                                }
+                            }]
+                        }
+
+                    }
+                    
+                };
+                var c = document.getElementById('hChart1').getContext('2d');
+                var barchar = new Chart(c, barChartData);
+
+                //hospital name vs hospital beds
+                var barChartData2 = 
+                {
+                    type: 'bar', 
+                    data: {
+                        labels: retKeys(date_to_inpBeds), 
+                        datasets: [{
+                            label: "Average Number of Inpatient Beds",
+                            backgroundColor: '#ff6384', 
+                            borderColor: '#ff6384', 
+                            borderWidth: 1, 
+                            data: retIt(date_to_inpBeds)
+                        }]
+                    }, 
+                    options: {
+                        responsive: true, 
+                        legend: {
+                            position: 'top'
+                        }, 
+                        title: {
+                            display: true, 
+                            text: 'The Average Number of Inpatient Beds Each Day'
+                        },
+                        hover: {
+                            mode: 'nearest',
+                            intersect: false
+                        }, 
+                        scales: {
+                            xAxes: [{
+                                display: true, 
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Day'
+                                }
+                            }],
+                            yAxes: [{
+                                display: true, 
+                                scaleLabel: {
+                                    display: true, 
+                                    labelString: '# of Beds'
+                                }
+                            }]
+                        }
+
+                    }
+                    
+                };
+                var d = document.getElementById('hChart2').getContext('2d');
+                var barchar = new Chart(d, barChartData2);
+            });
+
+
+
+            
+            
+            }
     });
-
 </script>
 
 <style>
