@@ -159,7 +159,16 @@
             var database = firebase.database();
             var hospData = database.ref("hospital_data");
             var stateData = database.ref("state_data");
-            //open snapshot
+            
+            //cut off dates
+            //date in hosp indicates the nearest friday -- so date cutoff
+            // would be the most recent friday 
+            var currentTime = new Date()
+            currentTime.setDate(currentTime.getDate() - (currentTime.getDay() +1) - 7);
+            console.log("the cutoff date: " + currentTime);
+            var cutoffDate = Date.parse(currentTime);
+            
+            //open snapshot         
             dates = [];
             deaths = [];
             hospitalized = [];
@@ -170,21 +179,39 @@
             stateData.orderByChild("state").equalTo(state).once('value', function (snapshot) {
                 var data = snapshot.val();
                 for (let i in data) {
-                    var dat = data[i].state;
-                    if (inc < 8) {
-                        datesmin.push(data[i].date);
-                        deathsmin.push(data[i].death);
-                        hospitalizedmin.push(data[i].hospitalizedCurrently)
+                    var d1 = Date.parse(data[i].date);
+                    if(d1 >= cutoffDate){
+                        var dat = data[i].state;
+                        if (inc < 8) {
+                            datesmin.push(data[i].date);
+                            deathsmin.push(data[i].death);
+                            hospitalizedmin.push(data[i].hospitalizedCurrently)
+                        }
+                        dates.push(data[i].date);
+                        deaths.push(data[i].death);
+                        hospitalized.push(data[i].hospitalizedCurrently)
                     }
-                    dates.push(data[i].date);
-                    deaths.push(data[i].death);
-                    hospitalized.push(data[i].hospitalizedCurrently)
-                    $("#table_body").append("<tr><td>" + dat + "</td></tr>"); //I added it to a table, but dat currently contains the state val and 
-                    // data currently contains the whole chunk from date to deaths etc
                     inc++;
                 }
             });
-
+            
+            //this was my approach to formatting the state data
+            //var state_date = [];
+            //var state_deaths = [];
+            //var state_pos_inc = [];
+            //stateData.orderByChild("state").equalTo(state).once('value', function (snapshot) {
+            //    var sD = snapshot.val();
+            //    for (let i in sD) {
+            //        var d1 = Date.parse(sD[i].date);
+            //        if(d1 >= cutoffDate){
+            //            state_date.push(data[i].date);
+            //            state_deaths.push(data[i].death)
+            //            state_pos_inc.push(data[i].positiveIncrease)
+            //        }
+            //    }
+            //});
+            
+            
             console.log(deathsmin);
             var max = deathsmin.pop() + 1000;
             var min = hospitalizedmin.pop() - 1000;
